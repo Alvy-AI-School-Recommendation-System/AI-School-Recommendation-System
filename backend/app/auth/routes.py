@@ -4,6 +4,7 @@ Authentication Routes
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from jose import JWTError
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.config import settings
@@ -230,7 +231,9 @@ async def refresh_token(
             "refresh_token": refresh_token,
             "token_type": "bearer"
         }
-    except Exception as e:
+    except (JWTError, ValueError) as e:
+        # Only catch JWT validation errors and ValueError from int() conversion
+        # Let HTTPException propagate to preserve specific error messages and status codes
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"

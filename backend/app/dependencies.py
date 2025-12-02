@@ -36,7 +36,9 @@ async def get_current_user(
         if user_id is None:
             raise credentials_exception
         user_id = int(user_id)
-    except JWTError:
+    except (JWTError, ValueError):
+        # Catch JWTError from token validation and ValueError from int() conversion
+        # Both should result in 401 Unauthorized response
         raise credentials_exception
     
     user = db.query(User).filter(User.id == user_id).first()
